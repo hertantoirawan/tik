@@ -1,0 +1,22 @@
+body {
+  background-color: white;
+}
+
+.dot {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin: 4px;
+  display: inline-block;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 8rem;
+  height: 4rem;
+}
