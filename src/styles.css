@@ -17,6 +17,6 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  width: 8rem;
-  height: 4rem;
+  width: 5rem; /* 14 for 8x8 */
+  height: 5rem; /* 14 for 8x8 */
 }
