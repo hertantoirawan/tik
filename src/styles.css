@@ -13,10 +13,8 @@ body {
 }
 
 .grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto auto auto;
   justify-content: center;
   align-items: center;
-  width: 5rem; /* 14 for 8x8 */
-  height: 5rem; /* 14 for 8x8 */
 }
