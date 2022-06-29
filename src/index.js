@@ -1,16 +1,15 @@
 import './styles.css';
 import anime from 'animejs/lib/anime.es.js';
 
-const GRID_WIDTH = 3;
-const GRID_HEIGHT = 3;
+const GRID_WIDTH = 6;
+const GRID_HEIGHT = 6;
 const NUM_CONNECTED_DOTS = 2;
 
 const grid = document.querySelector('.grid');
 const gridDots = [];
 let score = 0;
 
-// orange green blue
-const colors = ['rgb(255, 0, 0)', 'rgb(0, 128, 0)', 'rgb(0, 0, 255)'];
+const colors = ['rgb(172, 170, 118)', 'rgb(91, 115, 141)', 'rgb(219, 73, 84)', 'rgb(253, 182, 176)', 'rgb(239, 179, 93)'];
 
 for (let x = 0; x < GRID_WIDTH; x += 1) {
   const tempDots = [];

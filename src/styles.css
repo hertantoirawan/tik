@@ -1,12 +1,14 @@
 body {
-  background-color: white;
+  background-image: url("../public/background.jpeg");
+  background-repeat: repeat;
+  background-size: cover;
 }
 
 .dot {
   position: relative;
-  width: 20px;
-  height: 20px;
-  margin: 4px;
+  width: 30px;
+  height: 30px;
+  margin: 14px;
   display: inline-block;
   border-radius: 50%;
   cursor: pointer;
@@ -14,7 +16,7 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto auto auto;
   justify-content: center;
   align-items: center;
 }
