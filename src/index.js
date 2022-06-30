@@ -1,41 +1,13 @@
 import './styles.css';
 import anime from 'animejs/lib/anime.es.js';
+import axios from 'axios';
 
 const GRID_WIDTH = 6;
 const GRID_HEIGHT = 6;
 const NUM_CONNECTED_DOTS = 2;
 
-const grid = document.querySelector('.grid');
-const gridDots = [];
+let gridDots = [];
 let score = 0;
-
-const colors = ['rgb(172, 170, 118)', 'rgb(91, 115, 141)', 'rgb(219, 73, 84)', 'rgb(253, 182, 176)', 'rgb(239, 179, 93)'];
-
-for (let x = 0; x < GRID_WIDTH; x += 1) {
-  const tempDots = [];
-
-  for (let y = 0; y < GRID_HEIGHT; y += 1) {
-    const dot = document.createElement('div');
-
-    dot.setAttribute('id', `dot-${x}-${y}`);
-    dot.classList.add('dot');
-    const color = colors[anime.random(0, colors.length - 1)];
-    dot.style.backgroundColor = color;
-
-    tempDots.push(color);
-    grid.appendChild(dot);
-  }
-
-  gridDots.push(tempDots);
-}
-console.log(gridDots);
-
-const setup = anime({
-  targets: '.dot',
-  translateY: 200,
-  duration: 1000,
-  autoplay: false,
-});
 
 const getDotsAbove = (id) => {
   const dots = [];
@@ -266,13 +238,26 @@ const isValidMove = () => {
   return true;
 };
 
+/**
+ * Get color from div ID.
+ * @param {string} id Div ID.
+ * @returns Background color of div.
+ */
+const getDotColorFromID = (id) => {
+  const idTokens = id.split('-');
+  const x = idTokens[1];
+  const y = idTokens[2];
+
+  return gridDots[x][y];
+};
+
 const dotsConnected = () => {
   if (selectedDots.length < NUM_CONNECTED_DOTS) return false;
   if (!isValidMove()) return false;
 
   let color;
   for (let i = 0; i < selectedDots.length; i += 1) {
-    const thisDotColor = document.querySelector(`#${selectedDots[i]}`).style.backgroundColor;
+    const thisDotColor = getDotColorFromID(selectedDots[i]);
 
     if (i === 0) color = thisDotColor;
     else if (color !== thisDotColor) {
@@ -284,29 +269,84 @@ const dotsConnected = () => {
   return true;
 };
 
-const dots = document.querySelectorAll('.dot');
-dots.forEach((dot) => {
-  dot.onclick = () => {
-    const timeline = anime.timeline({
-      autoplay: false,
-    });
+/**
+ * Add click events to dots.
+ */
+const addDotClicks = () => {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((dot) => {
+    dot.onclick = () => {
+      const timeline = anime.timeline({
+        autoplay: false,
+      });
 
-    selectDot(timeline, dot.id);
+      selectDot(timeline, dot.id);
 
-    if (selectedDots.length >= NUM_CONNECTED_DOTS) {
-      if (dotsConnected()) {
-        console.log(`dots connected: ${selectedDots}`);
-        removeConnectedDots(timeline);
-        fixDotsPositionsColors(timeline);
+      if (selectedDots.length >= NUM_CONNECTED_DOTS) {
+        if (dotsConnected()) {
+          console.log(`dots connected: ${selectedDots}`);
+          removeConnectedDots(timeline);
+          fixDotsPositionsColors(timeline);
         // replaceEmptyDots(timeline);
+        }
+        unselectDots(timeline);
       }
-      unselectDots(timeline);
-    }
 
-    console.log(`score: ${score}`);
+      console.log(`score: ${score}`);
     // timeline.play();
-  };
-});
+    };
+  });
+};
+
+/**
+ * Display initial dots grid.
+ * @param {string[][]} param0 Array of array of colors.
+ */
+const displayGrid = ({ grid }) => {
+  gridDots = JSON.parse(grid);
+
+  const gridElement = document.querySelector('.grid');
+
+  for (let x = 0; x < gridDots.length; x += 1) {
+    for (let y = 0; y < gridDots[x].length; y += 1) {
+      const dot = document.createElement('div');
+
+      dot.setAttribute('id', `dot-${x}-${y}`);
+      dot.classList.add('dot');
+      dot.style.backgroundColor = gridDots[x][y];
+
+      gridElement.appendChild(dot);
+    }
+  }
+
+  addDotClicks();
+
+  console.log(gridDots);
+};
+
+let currentGame = null;
+
+/**
+ * Start new game.
+ */
+const createGame = () => {
+  // Make a request to create a new game
+  axios.post('/games')
+    .then((response) => {
+      // set the global value to the new game.
+      currentGame = response.data;
+
+      console.log(currentGame);
+
+      // display it out to the user
+      displayGrid(currentGame);
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
+};
+createGame();
 
 // const getCenterCoordinates = (element) => {
 //   const shape = element.getBoundingClientRect();

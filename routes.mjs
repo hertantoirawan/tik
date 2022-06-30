@@ -1,9 +1,11 @@
 import { resolve } from 'path';
 import db from './models/index.mjs';
 import initGamesController from './controllers/games.mjs';
+import initUsersController from './controllers/users.mjs';
 
 export default function bindRoutes(app) {
   const GamesController = initGamesController(db);
+  const UsersController = initUsersController(db);
 
   // Root route returns the Webpack-generated main.html file
   app.get('/', (request, response) => {
@@ -12,6 +14,15 @@ export default function bindRoutes(app) {
 
   // create a new game
   app.post('/games', GamesController.create);
-  // update a game with new cards
-  app.put('/games/:id/deal', GamesController.deal);
+
+  // get existing game
+  app.get('/games/:id', GamesController.retrieve);
+
+  // evaluate move
+  // app.post('/games/:id/connect', GamesController.connect);
+
+  // login
+  // app.post('/login', UsersController.login);
+
+  // logout
 }

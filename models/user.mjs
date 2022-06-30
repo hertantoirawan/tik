@@ -1,13 +1,18 @@
-export default function gameModel(sequelize, DataTypes) {
-  return sequelize.define('game', {
+export default function userModel(sequelize, DataTypes) {
+  return sequelize.define('user', {
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    gameState: {
-      type: DataTypes.JSON,
+    email: {
+      allowNull: false,
+      type: DataTypes.STRING,
+    },
+    password: {
+      allowNull: false,
+      type: DataTypes.STRING,
     },
     createdAt: {
       allowNull: false,
