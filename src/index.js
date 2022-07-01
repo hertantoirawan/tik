@@ -287,7 +287,8 @@ const addDotClicks = () => {
           console.log(`dots connected: ${selectedDots}`);
           removeConnectedDots(timeline);
           fixDotsPositionsColors(timeline);
-        // replaceEmptyDots(timeline);
+          // replaceEmptyDots(timeline);
+          saveGame();
         }
         unselectDots(timeline);
       }
@@ -303,9 +304,11 @@ const addDotClicks = () => {
  * @param {string[][]} param0 Array of array of colors.
  */
 const displayGrid = ({ grid }) => {
-  gridDots = JSON.parse(grid);
+  // gridDots = JSON.parse(grid);
+  gridDots = grid;
 
   const gridElement = document.querySelector('.grid');
+  gridElement.innerHTML = '';
 
   for (let x = 0; x < gridDots.length; x += 1) {
     for (let y = 0; y < gridDots[x].length; y += 1) {
@@ -336,17 +339,130 @@ const createGame = () => {
       // set the global value to the new game.
       currentGame = response.data;
 
-      console.log(currentGame);
-
       // display it out to the user
       displayGrid(currentGame);
+
+      document.querySelector('.grid').style.display = 'block';
+      document.querySelector('.btn-logout').hidden = false;
     })
     .catch((error) => {
       // handle error
       console.log(error);
     });
 };
-createGame();
+// createGame();
+
+/**
+ * Save game state.
+ */
+const saveGame = () => {
+  axios.put('/games', { grid: gridDots })
+    .then((response) => {
+      // set the global value to the new game.
+      currentGame = response.data;
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
+};
+
+/**
+ * Continue previous game.
+ */
+const continueGame = () => {
+  axios.get('/games')
+    .then((response) => {
+      // set the global value to the new game.
+      currentGame = response.data;
+
+      // display it out to the user
+      displayGrid(currentGame);
+
+      document.querySelector('.grid').style.display = 'block';
+      document.querySelector('.btn-logout').hidden = false;
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
+};
+
+const logout = () => {
+  axios
+    .post('/logout')
+    .then((response) => {
+      console.log(response.data);
+
+      document.querySelector('.login-container').style.display = 'block';
+      document.querySelector('.grid').style.display = 'none';
+      document.querySelector('.btn-logout').hidden = true;
+    })
+    .catch((error) => console.log(error));
+};
+
+const loginBtn = document.querySelector('.btn-login');
+loginBtn.addEventListener('click', () => {
+  axios.post('/login', {
+    email: document.querySelector('#username').value,
+    password: document.querySelector('#password').value,
+  })
+    .then((response) => {
+      console.log(response.data);
+
+      // clear login elements
+      document.querySelector('.login-container').style.display = 'none';
+
+      axios.get('/games')
+        .then((resp) => {
+          // set the global value to the new game.
+          const lastGame = resp.data;
+
+          if (lastGame) {
+            // continue or new game?
+            document.querySelector('.btn-continue-modal').click();
+          } else {
+            createGame();
+          }
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        });
+
+      // show logout button
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
+});
+
+const signupBtn = document.querySelector('.btn-signup');
+signupBtn.addEventListener('click', () => {
+  axios.post('/signup', {
+    email: document.querySelector('#signupUsername').value,
+    password: document.querySelector('#signupPassword').value,
+  })
+    .then((response) => {
+      console.log(response.data);
+
+      // show message that signup success/fail
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
+});
+
+const newGameBtn = document.querySelector('.btn-new-game');
+newGameBtn.addEventListener('click', createGame);
+
+const continueGameBtn = document.querySelector('.btn-continue-game');
+continueGameBtn.addEventListener('click', continueGame);
+
+const logoutBtn = document.querySelector('.btn-logout');
+logoutBtn.addEventListener('click', logout);
 
 // const getCenterCoordinates = (element) => {
 //   const shape = element.getBoundingClientRect();

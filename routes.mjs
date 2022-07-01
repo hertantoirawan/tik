@@ -12,17 +12,21 @@ export default function bindRoutes(app) {
     response.sendFile(resolve('dist', 'main.html'));
   });
 
-  // create a new game
+  // create a new game for user
   app.post('/games', GamesController.create);
 
-  // get existing game
-  app.get('/games/:id', GamesController.retrieve);
+  // save user game state
+  app.put('/games', GamesController.save);
 
-  // evaluate move
-  // app.post('/games/:id/connect', GamesController.connect);
+  // get latest game for user
+  app.get('/games', GamesController.retrieve);
+
+  // sign up
+  app.post('/signup', UsersController.signup);
 
   // login
-  // app.post('/login', UsersController.login);
+  app.post('/login', UsersController.login);
 
   // logout
+  app.post('/logout', UsersController.logout);
 }

@@ -8,6 +8,7 @@ body {
 
   display: flex;
   align-items: center;
+  text-align: center;
 }
 
 .dot {
@@ -25,4 +26,43 @@ body {
   grid-template-columns: auto auto auto auto auto auto;
   justify-content: center;
   align-items: center;
+}
+
+.login-container {
+  max-width: 330px;
+  width: 100%;
+  margin: auto;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited {
+  background-color: rgb(202, 71, 102) !important;
+  border-color: rgb(202, 71, 102) !important;
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:active,
+.btn-secondary:visited {
+  background-color: rgb(210, 117, 109) !important;
+  border-color: rgb(210, 117, 109) !important;
+}
+
+#username,
+#password {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+label {
+  color: white;
+}
+
+.modal-input > input {
+  color: black !important;
+}
+.modal-input > label {
+  color: black !important;
 }

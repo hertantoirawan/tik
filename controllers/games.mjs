@@ -1,8 +1,16 @@
 const GRID_WIDTH = 6;
 const GRID_HEIGHT = 6;
 
-const colors = ['rgb(172, 170, 118)', 'rgb(91, 115, 141)', 'rgb(219, 73, 84)', 'rgb(253, 182, 176)', 'rgb(239, 179, 93)'];
+const colors = ['rgb(172, 170, 118)',
+  'rgb(91, 115, 141)',
+  'rgb(219, 73, 84)',
+  'rgb(253, 182, 176)',
+  'rgb(239, 179, 93)'];
 
+/**
+ * Create new grid.
+ * @returns Array of array of dots.
+ */
 const createGrid = () => {
   const gridDots = [];
 
@@ -35,7 +43,7 @@ const createGrid = () => {
 
 export default function initGamesController(db) {
   const create = async (request, response) => {
-    const grid = JSON.stringify(createGrid());
+    const grid = createGrid();
 
     const newGame = {
       gameState: {
@@ -45,6 +53,13 @@ export default function initGamesController(db) {
 
     try {
       const game = await db.Game.create(newGame);
+
+      const user = await db.User.findOne({
+        where: {
+          id: request.cookies.userId,
+        },
+      });
+      game.addUser(user);
 
       response.send({
         id: game.id,
@@ -57,13 +72,49 @@ export default function initGamesController(db) {
 
   const retrieve = async (request, response) => {
     try {
-      // get the game by the ID passed in the request
-      const game = await db.Game.findByPk(request.params.id);
+      const user = await db.User.findOne({
+        where: {
+          id: request.cookies.userId,
+        },
+      });
+
+      const games = await user.getGames({
+        order: [['id', 'DESC']],
+      });
+
+      if (games) {
+        response.send({
+          id: games[0].id,
+          grid: games[0].gameState.grid,
+        });
+      } else {
+        response.status(404).send({
+          error: 'The game cannot be found.',
+        });
+      }
+    } catch (error) {
+      response.status(500).send(error);
+    }
+  };
+
+  const save = async (request, response) => {
+    try {
+      const user = await db.User.findOne({
+        where: {
+          id: request.cookies.userId,
+        },
+      });
+
+      const games = await user.getGames({
+        order: [['id', 'DESC']],
+      });
+
+      games[0].update({ gameState: { grid: request.body.grid } });
 
       // send the updated game back to the user.
       response.send({
-        id: game.id,
-        grid: game.gameState.grid,
+        id: user.id,
+        grid: request.body.grid,
       });
     } catch (error) {
       response.status(500).send(error);
@@ -75,5 +126,6 @@ export default function initGamesController(db) {
   return {
     create,
     retrieve,
+    save,
   };
 }
