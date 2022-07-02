@@ -107,6 +107,7 @@ export default function initGamesController(db) {
 
       const games = await user.getGames({
         order: [['id', 'DESC']],
+        limit: 1,
       });
 
       games[0].update({ gameState: { grid: request.body.grid } });

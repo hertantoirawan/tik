@@ -66,3 +66,7 @@ label {
 .modal-input > label {
   color: black !important;
 }
+
+.feedback {
+  color: rgb(210, 117, 109);
+}

@@ -1,5 +1,11 @@
 import jsSHA from 'jssha';
 
+const hashPassword = (password) => {
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  shaObj.update(password);
+  return shaObj.getHash('HEX');
+};
+
 export default function initUsersController(db) {
   const login = async (req, res) => {
     console.log(req.body);
@@ -11,15 +17,20 @@ export default function initUsersController(db) {
       });
       console.log('user', user);
 
-      const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-      shaObj.update(req.body.password);
-      const hashedPassword = shaObj.getHash('HEX');
-      console.log('hashed password', hashedPassword);
+      if (user) {
+        const hashedPassword = hashPassword(req.body.password);
+        console.log('hashed password', hashedPassword);
 
-      if (hashedPassword === user.password) {
-        res.cookie('loggedIn', true);
-        res.cookie('userId', user.id);
-        res.send({ id: user.id, email: user.email });
+        if (hashedPassword === user.password) {
+          res.cookie('loggedIn', true);
+          res.cookie('userId', user.id);
+          res.send({ id: user.id, email: user.email });
+        } else {
+          console.log('not logged in ');
+          res.status(401).send({
+            error: 'The login information is incorrect.',
+          });
+        }
       } else {
         console.log('not logged in ');
         res.status(401).send({
@@ -68,9 +79,7 @@ export default function initUsersController(db) {
       console.log('user', user);
 
       if (!user) {
-        const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-        shaObj.update(req.body.password);
-        const hashedPassword = shaObj.getHash('HEX');
+        const hashedPassword = hashPassword(req.body.password);
         console.log('hashed password', hashedPassword);
 
         const newUser = {
@@ -84,7 +93,7 @@ export default function initUsersController(db) {
           email: userNew.email,
         });
       } else {
-        res.send({
+        res.status(409).send({
           error: 'The email address is already in use.',
         });
       }

@@ -327,6 +327,27 @@ const displayGrid = ({ grid }) => {
   console.log(gridDots);
 };
 
+const switchToLoginMode = () => {
+  document.querySelector('.login-container').style.display = 'block';
+  document.querySelector('.grid').style.display = 'none';
+  document.querySelector('.btn-logout').hidden = true;
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+
+  document.querySelector('#username').value = '';
+  document.querySelector('#password').value = '';
+};
+
+const switchToLoggedinMode = () => {
+  document.querySelector('.login-container').style.display = 'none';
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+};
+
+const switchToGameMode = () => {
+  document.querySelector('.grid').style.display = 'block';
+  document.querySelector('.btn-logout').hidden = false;
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+};
+
 let currentGame = null;
 
 /**
@@ -342,8 +363,7 @@ const createGame = () => {
       // display it out to the user
       displayGrid(currentGame);
 
-      document.querySelector('.grid').style.display = 'block';
-      document.querySelector('.btn-logout').hidden = false;
+      switchToGameMode();
     })
     .catch((error) => {
       // handle error
@@ -379,8 +399,7 @@ const continueGame = () => {
       // display it out to the user
       displayGrid(currentGame);
 
-      document.querySelector('.grid').style.display = 'block';
-      document.querySelector('.btn-logout').hidden = false;
+      switchToGameMode();
     })
     .catch((error) => {
       // handle error
@@ -394,65 +413,67 @@ const logout = () => {
     .then((response) => {
       console.log(response.data);
 
-      document.querySelector('.login-container').style.display = 'block';
-      document.querySelector('.grid').style.display = 'none';
-      document.querySelector('.btn-logout').hidden = true;
+      switchToLoginMode();
     })
     .catch((error) => console.log(error));
 };
 
 const loginBtn = document.querySelector('.btn-login');
 loginBtn.addEventListener('click', () => {
-  axios.post('/login', {
-    email: document.querySelector('#username').value,
-    password: document.querySelector('#password').value,
-  })
-    .then((response) => {
-      console.log(response.data);
+  const isLoginFormValid = document.querySelector('#login-form').reportValidity();
 
-      // clear login elements
-      document.querySelector('.login-container').style.display = 'none';
-
-      axios.get('/games')
-        .then((resp) => {
-          // set the global value to the new game.
-          const lastGame = resp.data;
-
-          if (lastGame) {
-            // continue or new game?
-            document.querySelector('.btn-continue-modal').click();
-          } else {
-            createGame();
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
-
-      // show logout button
+  if (isLoginFormValid) {
+    axios.post('/login', {
+      email: document.querySelector('#username').value,
+      password: document.querySelector('#password').value,
     })
-    .catch((error) => {
-      // handle error
-      console.log(error);
-    });
+      .then((response) => {
+        console.log(response.data);
+
+        switchToLoggedinMode();
+
+        axios.get('/games')
+          .then((resp) => {
+            const lastGame = resp.data;
+            console.log(lastGame);
+
+            document.querySelector('.btn-continue-modal').click();
+          })
+          .catch((error) => {
+            console.log('no existing game exists');
+            createGame();
+          });
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error);
+        document.querySelector('#loginFeedback').innerHTML = error.response.data.error;
+      });
+  }
 });
 
 const signupBtn = document.querySelector('.btn-signup');
 signupBtn.addEventListener('click', () => {
-  axios.post('/signup', {
-    email: document.querySelector('#signupUsername').value,
-    password: document.querySelector('#signupPassword').value,
-  })
-    .then((response) => {
-      console.log(response.data);
+  const isSignupFormValid = document.querySelector('#signup-form').reportValidity();
 
-      // show message that signup success/fail
+  if (isSignupFormValid) {
+    axios.post('/signup', {
+      email: document.querySelector('#signupUsername').value,
+      password: document.querySelector('#signupPassword').value,
     })
-    .catch((error) => {
+      .then((response) => {
+        console.log(response.data);
+
+        document.querySelector('.btn-close').click();
+
+        document.querySelector('#loginFeedback').innerHTML = 'New user has been created.<br/>Please log in to continue.';
+      })
+      .catch((error) => {
       // handle error
-      console.log(error);
-    });
+        console.log(error);
+        document.querySelector('#signupFeedback').innerHTML = error.response.data.error;
+      });
+  }
 });
 
 const newGameBtn = document.querySelector('.btn-new-game');
