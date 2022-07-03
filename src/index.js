@@ -8,6 +8,7 @@ const NUM_CONNECTED_DOTS = 2;
 
 let gridDots = [];
 let score = 0;
+let currentGame = null;
 
 const getDotsAbove = (id) => {
   const dots = [];
@@ -251,6 +252,13 @@ const getDotColorFromID = (id) => {
   return gridDots[x][y];
 };
 
+const updateScore = (newScore) => {
+  if (newScore) score = newScore;
+  else score = 0;
+
+  document.querySelector('.score').textContent = score;
+};
+
 const dotsConnected = () => {
   if (selectedDots.length < NUM_CONNECTED_DOTS) return false;
   if (!isValidMove()) return false;
@@ -265,8 +273,22 @@ const dotsConnected = () => {
     }
   }
 
-  score += (selectedDots.length - NUM_CONNECTED_DOTS) + 1;
+  updateScore(score + (selectedDots.length - NUM_CONNECTED_DOTS) + 1);
   return true;
+};
+
+/**
+ * Save game state.
+ */
+const saveGame = () => {
+  axios.put('/games', { grid: gridDots, score })
+    .then((response) => {
+      currentGame = response.data;
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
 };
 
 /**
@@ -330,7 +352,7 @@ const displayGrid = ({ grid }) => {
 const switchToLoginMode = () => {
   document.querySelector('.login-container').style.display = 'block';
   document.querySelector('.grid').style.display = 'none';
-  document.querySelector('.btn-logout').hidden = true;
+  document.querySelector('.game-container').style.display = 'none';
   document.querySelector('.feedback').innerHTML = '&nbsp;';
 
   document.querySelector('#username').value = '';
@@ -344,11 +366,9 @@ const switchToLoggedinMode = () => {
 
 const switchToGameMode = () => {
   document.querySelector('.grid').style.display = 'block';
-  document.querySelector('.btn-logout').hidden = false;
+  document.querySelector('.game-container').style.display = 'block';
   document.querySelector('.feedback').innerHTML = '&nbsp;';
 };
-
-let currentGame = null;
 
 /**
  * Start new game.
@@ -364,22 +384,8 @@ const createGame = () => {
       displayGrid(currentGame);
 
       switchToGameMode();
-    })
-    .catch((error) => {
-      // handle error
-      console.log(error);
-    });
-};
-// createGame();
 
-/**
- * Save game state.
- */
-const saveGame = () => {
-  axios.put('/games', { grid: gridDots })
-    .then((response) => {
-      // set the global value to the new game.
-      currentGame = response.data;
+      updateScore(0);
     })
     .catch((error) => {
       // handle error
@@ -398,6 +404,7 @@ const continueGame = () => {
 
       // display it out to the user
       displayGrid(currentGame);
+      updateScore(currentGame.score);
 
       switchToGameMode();
     })
@@ -474,6 +481,19 @@ signupBtn.addEventListener('click', () => {
         document.querySelector('#signupFeedback').innerHTML = error.response.data.error;
       });
   }
+});
+
+const resetBtn = document.querySelector('.reset');
+resetBtn.addEventListener('click', () => {
+  console.log('current game');
+  console.log(currentGame);
+  console.log('grid dots');
+  console.log(gridDots);
+});
+
+const restartBtn = document.querySelector('.restart');
+restartBtn.addEventListener('click', () => {
+  createGame();
 });
 
 const newGameBtn = document.querySelector('.btn-new-game');

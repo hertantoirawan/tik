@@ -86,6 +86,7 @@ export default function initGamesController(db) {
         response.send({
           id: games[0].id,
           grid: games[0].gameState.grid,
+          score: games[0].gameState.score,
         });
       } else {
         response.status(404).send({
@@ -110,7 +111,12 @@ export default function initGamesController(db) {
         limit: 1,
       });
 
-      games[0].update({ gameState: { grid: request.body.grid } });
+      games[0].update({
+        gameState: {
+          grid: request.body.grid,
+          score: request.body.score,
+        },
+      });
 
       // send the updated game back to the user.
       response.send({

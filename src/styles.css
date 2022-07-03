@@ -70,3 +70,16 @@ label {
 .feedback {
   color: rgb(210, 117, 109);
 }
+
+.game-container {
+  display: none;
+}
+
+.reset,
+.restart {
+  cursor: pointer;
+}
+
+.score {
+  font-size: large;
+}
