@@ -349,23 +349,18 @@ const addDotClicks = () => {
   const dots = document.querySelectorAll('.dot');
   dots.forEach((dot) => {
     dot.onclick = () => {
-      const timeline = anime.timeline({
-        autoplay: false,
-      });
-
-      selectDot(timeline, dot.id);
+      selectDot(dot.id);
 
       if (selectedDots.length >= NUM_CONNECTED_DOTS) {
         if (dotsConnected()) {
           console.log(`dots connected: ${selectedDots}`);
-          removeConnectedDots(timeline);
-          fixDotsPositionsColors(timeline);
+          removeConnectedDots();
+          fixDotsPositionsColors();
           // replaceEmptyDots(timeline);
           saveGame();
         }
-        unselectDots(timeline);
+        unselectDots();
       }
-      // timeline.play();
     };
   });
 };
