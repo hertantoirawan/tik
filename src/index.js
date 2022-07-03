@@ -314,9 +314,7 @@ const addDotClicks = () => {
         }
         unselectDots(timeline);
       }
-
-      console.log(`score: ${score}`);
-    // timeline.play();
+      // timeline.play();
     };
   });
 };
@@ -481,14 +479,6 @@ signupBtn.addEventListener('click', () => {
         document.querySelector('#signupFeedback').innerHTML = error.response.data.error;
       });
   }
-});
-
-const resetBtn = document.querySelector('.reset');
-resetBtn.addEventListener('click', () => {
-  console.log('current game');
-  console.log(currentGame);
-  console.log('grid dots');
-  console.log(gridDots);
 });
 
 const restartBtn = document.querySelector('.restart');
