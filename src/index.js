@@ -9,7 +9,43 @@ const NUM_CONNECTED_DOTS = 2;
 let gridDots = [];
 let score = 0;
 let currentGame = null;
+let selectedDots = [];
 
+/**
+ * Prepare login page.
+ */
+const switchToLoginMode = () => {
+  document.querySelector('.login-container').style.display = 'block';
+  document.querySelector('.grid').style.display = 'none';
+  document.querySelector('.game-container').style.display = 'none';
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+
+  document.querySelector('#username').value = '';
+  document.querySelector('#password').value = '';
+};
+
+/**
+ * Prepare transition between login and game page.
+ */
+const switchToLoggedinMode = () => {
+  document.querySelector('.login-container').style.display = 'none';
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+};
+
+/**
+ * Prepare game page.
+ */
+const switchToGameMode = () => {
+  document.querySelector('.grid').style.display = 'block';
+  document.querySelector('.game-container').style.display = 'block';
+  document.querySelector('.feedback').innerHTML = '&nbsp;';
+};
+
+/**
+ * Get dots above a specific dot.
+ * @param {string} id ID of a dot.
+ * @returns HTML IDs of the dots above.
+ */
 const getDotsAbove = (id) => {
   const dots = [];
 
@@ -24,8 +60,10 @@ const getDotsAbove = (id) => {
   return dots;
 };
 
-let selectedDots = [];
-
+/**
+ * Get HTML IDs for all dots above the selected dots.
+ * @returns Array of dot IDs.
+ */
 const getDotsAboveSelected = () => {
   const dotsAbove = [];
 
@@ -34,6 +72,10 @@ const getDotsAboveSelected = () => {
   return dotsAbove.flat();
 };
 
+/**
+ * Get empty slots in the game grid.
+ * @returns HTML IDs of empty slots.
+ */
 const getEmptyDots = () => {
   const emptyDots = [];
   const emptyColumns = {};
@@ -54,7 +96,10 @@ const getEmptyDots = () => {
   return emptyDots;
 };
 
-const removeConnectedDots = (remove) => {
+/**
+ * Remove connected dots.
+ */
+const removeConnectedDots = () => {
   selectedDots.forEach((selectedDot) => {
     const idTokens = selectedDot.split('-');
     gridDots[idTokens[1]][idTokens[2]] = '';
@@ -65,13 +110,6 @@ const removeConnectedDots = (remove) => {
     opacity: 0,
     scale: 1,
   });
-
-  // remove.add({
-  //   targets: selectedDots.map((selectedDot) => `#${selectedDot}`),
-  //   opacity: 0,
-  //   scale: 1,
-  //   autoplay: false,
-  // });
 };
 
 const dropDotsAbove = (remove) => {
@@ -128,7 +166,10 @@ const animatedFixDotsPositionsColors = (fix) => {
   }
 };
 
-const fixDotsPositionsColors = (fix) => {
+/**
+ * Fix dots positions after dots are connected.
+ */
+const fixDotsPositionsColors = () => {
   let column = GRID_WIDTH - 1;
   while (column >= 0) {
     let row = GRID_HEIGHT - 1;
@@ -162,9 +203,6 @@ const fixDotsPositionsColors = (fix) => {
     }
     column -= 1;
   }
-
-  console.log('after');
-  console.log(gridDots);
 };
 
 const animatedSelectDot = (select, id) => {
@@ -185,7 +223,11 @@ const animatedSelectDot = (select, id) => {
   }
 };
 
-const selectDot = (select, id) => {
+/**
+ * Select a dot.
+ * @param {string} id ID of dot to select.
+ */
+const selectDot = (id) => {
   if (selectedDots.includes(id)) {
     selectedDots.splice(selectedDots.indexOf(id), 1);
     anime({
@@ -201,7 +243,10 @@ const selectDot = (select, id) => {
   }
 };
 
-const unselectDots = (unselect) => {
+/**
+ * Unselect a dot.
+ */
+const unselectDots = () => {
   selectedDots = [];
 
   anime.timeline({
@@ -211,14 +256,12 @@ const unselectDots = (unselect) => {
     scale: 1,
     delay: 1000,
   });
-
-  // unselect.add({
-  //   targets: '.dot',
-  //   scale: 1,
-  //   autoplay: false,
-  // });
 };
 
+/**
+ * Check if a move is valid.
+ * @returns True if valid, false otherwise.
+ */
 const isValidMove = () => {
   let prevX;
   let prevY;
@@ -252,6 +295,10 @@ const getDotColorFromID = (id) => {
   return gridDots[x][y];
 };
 
+/**
+ * Update score.
+ * @param {number} newScore New score.
+ */
 const updateScore = (newScore) => {
   if (newScore) score = newScore;
   else score = 0;
@@ -259,6 +306,10 @@ const updateScore = (newScore) => {
   document.querySelector('.score').textContent = score;
 };
 
+/**
+ * Check if selected dots can connect.
+ * @returns True if connection is good, false otherwise.
+ */
 const dotsConnected = () => {
   if (selectedDots.length < NUM_CONNECTED_DOTS) return false;
   if (!isValidMove()) return false;
@@ -347,27 +398,6 @@ const displayGrid = ({ grid }) => {
   console.log(gridDots);
 };
 
-const switchToLoginMode = () => {
-  document.querySelector('.login-container').style.display = 'block';
-  document.querySelector('.grid').style.display = 'none';
-  document.querySelector('.game-container').style.display = 'none';
-  document.querySelector('.feedback').innerHTML = '&nbsp;';
-
-  document.querySelector('#username').value = '';
-  document.querySelector('#password').value = '';
-};
-
-const switchToLoggedinMode = () => {
-  document.querySelector('.login-container').style.display = 'none';
-  document.querySelector('.feedback').innerHTML = '&nbsp;';
-};
-
-const switchToGameMode = () => {
-  document.querySelector('.grid').style.display = 'block';
-  document.querySelector('.game-container').style.display = 'block';
-  document.querySelector('.feedback').innerHTML = '&nbsp;';
-};
-
 /**
  * Start new game.
  */
@@ -412,6 +442,9 @@ const continueGame = () => {
     });
 };
 
+/**
+ * Log out of the game.
+ */
 const logout = () => {
   axios
     .post('/logout')
@@ -423,6 +456,9 @@ const logout = () => {
     .catch((error) => console.log(error));
 };
 
+/**
+ * Add click event to Log In button.
+ */
 const loginBtn = document.querySelector('.btn-login');
 loginBtn.addEventListener('click', () => {
   const isLoginFormValid = document.querySelector('#login-form').reportValidity();
@@ -457,6 +493,9 @@ loginBtn.addEventListener('click', () => {
   }
 });
 
+/**
+ * Add click event to Sign Up button.
+ */
 const signupBtn = document.querySelector('.btn-signup');
 signupBtn.addEventListener('click', () => {
   const isSignupFormValid = document.querySelector('#signup-form').reportValidity();
@@ -481,17 +520,29 @@ signupBtn.addEventListener('click', () => {
   }
 });
 
+/**
+ * Add click event to Restart button.
+ */
 const restartBtn = document.querySelector('.restart');
 restartBtn.addEventListener('click', () => {
   createGame();
 });
 
+/**
+ * Add click event to New Game button.
+ */
 const newGameBtn = document.querySelector('.btn-new-game');
 newGameBtn.addEventListener('click', createGame);
 
+/**
+ * Add click event to Continue button.
+ */
 const continueGameBtn = document.querySelector('.btn-continue-game');
 continueGameBtn.addEventListener('click', continueGame);
 
+/**
+ * Add click event to Log Out button.
+ */
 const logoutBtn = document.querySelector('.btn-logout');
 logoutBtn.addEventListener('click', logout);
 

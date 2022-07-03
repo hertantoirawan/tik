@@ -28,19 +28,6 @@ const createGrid = () => {
   return gridDots;
 };
 
-/*
- * ========================================================
- * ========================================================
- * ========================================================
- * ========================================================
- *
- *                  Controller Functions
- *
- * ========================================================
- * ========================================================
- * ========================================================
- */
-
 export default function initGamesController(db) {
   const create = async (request, response) => {
     const grid = createGrid();
@@ -118,7 +105,6 @@ export default function initGamesController(db) {
         },
       });
 
-      // send the updated game back to the user.
       response.send({
         id: user.id,
         grid: request.body.grid,
@@ -128,8 +114,6 @@ export default function initGamesController(db) {
     }
   };
 
-  // return all functions we define in an object
-  // refer to the routes file above to see this used
   return {
     create,
     retrieve,

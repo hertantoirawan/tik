@@ -1,5 +1,10 @@
 import jsSHA from 'jssha';
 
+/**
+ * Hash a password.
+ * @param {string} password Password.
+ * @returns Hashed password.
+ */
 const hashPassword = (password) => {
   const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
   shaObj.update(password);
