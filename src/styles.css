@@ -23,6 +23,8 @@ body {
 
 .grid {
   display: grid;
+  margin: 0 auto;
+  width: 400px;
   grid-template-columns: auto auto auto auto auto auto;
   justify-content: center;
   align-items: center;
