@@ -2,14 +2,44 @@ import './styles.css';
 import anime from 'animejs/lib/anime.es.js';
 import axios from 'axios';
 
-const GRID_WIDTH = 6;
-const GRID_HEIGHT = 6;
-const NUM_CONNECTED_DOTS = 2;
+const MIN_CONNECTED_DOTS = 2;
+const LINE_WIDTH = 6;
 
 let gridDots = [];
 let score = 0;
 let currentGame = null;
 let selectedDots = [];
+
+/**
+ * Setup canvas for drawing lines.
+ */
+const setupCanvas = () => {
+  const canvas = document.querySelector('#drawLayer');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.left = '0px';
+  canvas.style.top = '0px';
+};
+setupCanvas();
+
+/**
+ * Remove line between dots.
+ */
+const removeLines = () => {
+  const canvas = document.querySelector('#drawLayer');
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+/**
+ * Get center coordinates of an element.
+ * @param {Element} element HTML element.
+ * @returns Element coordinates.
+ */
+const getCenterCoordinates = (element) => {
+  const shape = element.getBoundingClientRect();
+  return { x: shape.left + (shape.width / 2), y: (shape.top + (shape.height / 2)) };
+};
 
 /**
  * Prepare login page.
@@ -42,61 +72,6 @@ const switchToGameMode = () => {
 };
 
 /**
- * Get dots above a specific dot.
- * @param {string} id ID of a dot.
- * @returns HTML IDs of the dots above.
- */
-const getDotsAbove = (id) => {
-  const dots = [];
-
-  const idTokens = id.split('-');
-  const x = idTokens[1];
-  const y = idTokens[2];
-
-  for (let i = 0; i < y; i += 1) {
-    if (gridDots[x][i] !== '') dots.push(`#dot-${x}-${i}`);
-  }
-
-  return dots;
-};
-
-/**
- * Get HTML IDs for all dots above the selected dots.
- * @returns Array of dot IDs.
- */
-const getDotsAboveSelected = () => {
-  const dotsAbove = [];
-
-  selectedDots.forEach((selectedDot) => dotsAbove.push(getDotsAbove(selectedDot)));
-
-  return dotsAbove.flat();
-};
-
-/**
- * Get empty slots in the game grid.
- * @returns HTML IDs of empty slots.
- */
-const getEmptyDots = () => {
-  const emptyDots = [];
-  const emptyColumns = {};
-
-  selectedDots.forEach((selectedDot) => {
-    const x = selectedDot.split('-')[1];
-
-    if (x in emptyColumns) emptyColumns[x] += 1;
-    else emptyColumns[x] = 1;
-  });
-
-  Object.keys(emptyColumns).forEach((key) => {
-    for (let i = 0; i < emptyColumns[key]; i += 1) {
-      emptyDots.push(`#dot-${key}-${i}`);
-    }
-  });
-
-  return emptyDots;
-};
-
-/**
  * Remove connected dots.
  */
 const removeConnectedDots = () => {
@@ -105,6 +80,8 @@ const removeConnectedDots = () => {
     gridDots[idTokens[1]][idTokens[2]] = '';
   });
 
+  removeLines();
+
   anime({
     targets: selectedDots.map((selectedDot) => `#${selectedDot}`),
     opacity: 0,
@@ -112,67 +89,13 @@ const removeConnectedDots = () => {
   });
 };
 
-const dropDotsAbove = (remove) => {
-  const dotsAbove = getDotsAboveSelected();
-
-  if (dotsAbove.length > 0) {
-    // make dots above the dissapearing dot fall
-    remove.add({
-      targets: dotsAbove,
-      translateY: (dotsAbove.length === 1) ? 32 : 28,
-      autoplay: false,
-    });
-  }
-};
-
-const replaceEmptyDots = (replace) => {
-  const emptyDots = getEmptyDots();
-  console.log(`empty dots: ${emptyDots}`);
-  // fill in empty coordinates with new dots
-  replace.add({
-    targets: emptyDots,
-    background: () => colors[anime.random(0, colors.length - 1)],
-    translateY: [-20, 0],
-    opacity: 1,
-    autoplay: false,
-  });
-};
-
-const animatedFixDotsPositionsColors = (fix) => {
-  for (let i = 0; i < selectedDots.length; i += 1) {
-    const dotsAbove = getDotsAbove(selectedDots[i]);
-
-    if (dotsAbove.length > 0) {
-      // fix dot colors after falling dots animation
-      for (let j = dotsAbove.length - 1; j >= 0; j -= 1) {
-        fix.add({
-          targets: (j === (dotsAbove.length - 1)) ? `#${selectedDots[i]}` : `${dotsAbove[j + 1]}`,
-          background: document.querySelector(`${dotsAbove[j]}`).style.backgroundColor,
-          opacity: 1,
-          easing: 'linear',
-          autoplay: false,
-        });
-      }
-
-      // fix dots positions after falling dots animation
-      // TODO: need to hide animation
-      fix.add({
-        targets: dotsAbove,
-        translateY: (el, index) => ((index === 0) ? el.style.transform.translateY : 0),
-        easing: 'linear',
-        autoplay: false,
-      });
-    }
-  }
-};
-
 /**
  * Fix dots positions after dots are connected.
  */
 const fixDotsPositionsColors = () => {
-  let column = GRID_WIDTH - 1;
+  let column = gridDots[0].length - 1;
   while (column >= 0) {
-    let row = GRID_HEIGHT - 1;
+    let row = gridDots.length - 1;
 
     while (row >= 0) {
       if (gridDots[row][column] === '') {
@@ -192,7 +115,6 @@ const fixDotsPositionsColors = () => {
               targets: `#dot-${row}-${column}`,
               background: nonEmptyDot,
               opacity: 1,
-
             });
 
             break;
@@ -203,83 +125,6 @@ const fixDotsPositionsColors = () => {
     }
     column -= 1;
   }
-};
-
-const animatedSelectDot = (select, id) => {
-  if (selectedDots.includes(id)) {
-    select.add({
-      targets: `#${id}`,
-      scale: 1,
-      autoplay: false,
-    });
-  } else {
-    select.add({
-      targets: `#${id}`,
-      scale: 1.2,
-      autoplay: false,
-    });
-
-    selectedDots.push(id);
-  }
-};
-
-/**
- * Select a dot.
- * @param {string} id ID of dot to select.
- */
-const selectDot = (id) => {
-  if (selectedDots.includes(id)) {
-    selectedDots.splice(selectedDots.indexOf(id), 1);
-    anime({
-      targets: `#${id}`,
-      scale: 1,
-    });
-  } else {
-    selectedDots.push(id);
-    anime({
-      targets: `#${id}`,
-      scale: 1.2,
-    });
-  }
-};
-
-/**
- * Unselect a dot.
- */
-const unselectDots = () => {
-  selectedDots = [];
-
-  anime.timeline({
-    autoplay: true,
-  }).add({
-    targets: '.dot',
-    scale: 1,
-    delay: 1000,
-  });
-};
-
-/**
- * Check if a move is valid.
- * @returns True if valid, false otherwise.
- */
-const isValidMove = () => {
-  let prevX;
-  let prevY;
-
-  for (let i = 0; i < selectedDots.length; i += 1) {
-    const idTokens = selectedDots[i].split('-');
-    const x = idTokens[1];
-    const y = idTokens[2];
-
-    if (i > 0) {
-      if ((Math.abs(prevY - y) + Math.abs(prevX - x)) !== 1) return false;
-    }
-
-    prevX = x;
-    prevY = y;
-  }
-
-  return true;
 };
 
 /**
@@ -296,6 +141,122 @@ const getDotColorFromID = (id) => {
 };
 
 /**
+ * Draw lines between dots when they are selected.
+ */
+const drawLinesBetweenDots = () => {
+  if (selectedDots.length > 1) {
+    const canvas = document.querySelector('#drawLayer');
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+
+    // get first dot
+    const color = getDotColorFromID(selectedDots[0]);
+    const firstSelectedDot = document.querySelector(`#${selectedDots[0]}`);
+    const firstCoord = getCenterCoordinates(firstSelectedDot);
+    ctx.moveTo(firstCoord.x, firstCoord.y);
+
+    // draw lines from first dot to other dots
+    for (let i = 1; i < selectedDots.length; i += 1) {
+      if (getDotColorFromID(selectedDots[i]) === color) {
+        const coord = getCenterCoordinates(document.querySelector(`#${selectedDots[i]}`));
+
+        ctx.lineTo(coord.x, coord.y);
+      } else break;
+    }
+
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  }
+};
+
+/**
+ * Unselect a dot.
+ */
+const unselectDots = () => {
+  selectedDots = [];
+
+  removeLines();
+
+  anime.timeline({
+    autoplay: true,
+  }).add({
+    targets: '.dot',
+    scale: 1,
+    delay: 1000,
+  });
+};
+
+/**
+ * Select a dot.
+ * @param {string} id ID of dot to select.
+ */
+const selectDot = (id) => {
+  if (selectedDots.includes(id)) {
+    selectedDots.splice(selectedDots.indexOf(id), 1);
+    anime({
+      targets: `#${id}`,
+      scale: 1,
+    });
+  } else {
+    anime({
+      targets: `#${id}`,
+      scale: 1.2,
+    });
+
+    if (selectedDots.length > 0) {
+      if (getDotColorFromID(selectedDots[0]) !== getDotColorFromID(id)) {
+        unselectDots();
+      } else {
+        selectedDots.push(id);
+        drawLinesBetweenDots();
+      }
+    } else {
+      selectedDots.push(id);
+    }
+  }
+};
+
+/**
+ * Remove dots starting from id in selected dots.
+ * @param {string} id ID of dots to undo.
+ */
+const unselectDot = (id) => {
+  const index = selectedDots.indexOf(id);
+  selectedDots.splice(index);
+
+  // redraw lines
+  removeLines();
+  drawLinesBetweenDots();
+};
+
+/**
+ * Is the next move valid?
+ * @param {string} id ID of next dot.
+ * @returns True if valid, false otherwise.
+ */
+const isValidMove = (id) => {
+  const lastColor = getDotColorFromID(selectedDots.at(-1));
+  const newColor = getDotColorFromID(id);
+
+  // make sure colors are the same
+  if (lastColor !== newColor) return false;
+
+  const lastIdTokens = selectedDots.at(-1).split('-');
+  const lastX = lastIdTokens[1];
+  const lastY = lastIdTokens[2];
+
+  const newIdTokens = id.split('-');
+  const newX = newIdTokens[1];
+  const newY = newIdTokens[2];
+
+  // make sure new dot is above, below, left, right only (no diagonals)
+  if ((Math.abs(lastY - newY) + Math.abs(lastX - newX)) !== 1) return false;
+
+  return true;
+};
+
+/**
  * Update score.
  * @param {number} newScore New score.
  */
@@ -307,39 +268,33 @@ const updateScore = (newScore) => {
 };
 
 /**
- * Check if selected dots can connect.
- * @returns True if connection is good, false otherwise.
+ * Add click event to dot.
+ * @param {Element} dot Dot element.
  */
-const dotsConnected = () => {
-  if (selectedDots.length < NUM_CONNECTED_DOTS) return false;
-  if (!isValidMove()) return false;
+const addDotClick = (dot) => {
+  dot.onmousedown = (e) => {
+    e.preventDefault();
+    selectDot(dot.id);
+  };
 
-  let color;
-  for (let i = 0; i < selectedDots.length; i += 1) {
-    const thisDotColor = getDotColorFromID(selectedDots[i]);
-
-    if (i === 0) color = thisDotColor;
-    else if (color !== thisDotColor) {
-      return false;
+  dot.onmouseover = () => {
+    if ((selectedDots.length > 0) && isValidMove(dot.id)) {
+      selectDot(dot.id);
+    } else if (selectedDots.includes(dot.id)) {
+      unselectDot(dot.id);
     }
-  }
+  };
 
-  updateScore(score + (selectedDots.length - NUM_CONNECTED_DOTS) + 1);
-  return true;
-};
+  dot.onmouseup = () => {
+    if (selectedDots.length >= MIN_CONNECTED_DOTS) {
+      updateScore(score + (selectedDots.length - MIN_CONNECTED_DOTS) + 1);
 
-/**
- * Save game state.
- */
-const saveGame = () => {
-  axios.put('/games', { grid: gridDots, score })
-    .then((response) => {
-      currentGame = response.data;
-    })
-    .catch((error) => {
-      // handle error
-      console.log(error);
-    });
+      removeConnectedDots();
+      fixDotsPositionsColors();
+      saveGame();
+    }
+    unselectDots();
+  };
 };
 
 /**
@@ -348,20 +303,7 @@ const saveGame = () => {
 const addDotClicks = () => {
   const dots = document.querySelectorAll('.dot');
   dots.forEach((dot) => {
-    dot.onclick = () => {
-      selectDot(dot.id);
-
-      if (selectedDots.length >= NUM_CONNECTED_DOTS) {
-        if (dotsConnected()) {
-          console.log(`dots connected: ${selectedDots}`);
-          removeConnectedDots();
-          fixDotsPositionsColors();
-          // replaceEmptyDots(timeline);
-          saveGame();
-        }
-        unselectDots();
-      }
-    };
+    addDotClick(dot);
   });
 };
 
@@ -370,7 +312,6 @@ const addDotClicks = () => {
  * @param {string[][]} param0 Array of array of colors.
  */
 const displayGrid = ({ grid }) => {
-  // gridDots = JSON.parse(grid);
   gridDots = grid;
 
   const gridElement = document.querySelector('.grid');
@@ -389,8 +330,22 @@ const displayGrid = ({ grid }) => {
   }
 
   addDotClicks();
+};
 
-  console.log(gridDots);
+/**
+ * Save game state.
+ */
+const saveGame = () => {
+  axios.put('/games', { grid: gridDots, score })
+    .then((response) => {
+      currentGame = response.data;
+
+      displayGrid(currentGame);
+    })
+    .catch((error) => {
+      // handle error
+      console.log(error);
+    });
 };
 
 /**
@@ -443,9 +398,7 @@ const continueGame = () => {
 const logout = () => {
   axios
     .post('/logout')
-    .then((response) => {
-      console.log(response.data);
-
+    .then(() => {
       switchToLoginMode();
     })
     .catch((error) => console.log(error));
@@ -463,19 +416,14 @@ loginBtn.addEventListener('click', () => {
       email: document.querySelector('#username').value,
       password: document.querySelector('#password').value,
     })
-      .then((response) => {
-        console.log(response.data);
-
+      .then(() => {
         switchToLoggedinMode();
 
         axios.get('/games')
-          .then((resp) => {
-            const lastGame = resp.data;
-            console.log(lastGame);
-
+          .then(() => {
             document.querySelector('.btn-continue-modal').click();
           })
-          .catch((error) => {
+          .catch(() => {
             console.log('no existing game exists');
             createGame();
           });
@@ -500,15 +448,13 @@ signupBtn.addEventListener('click', () => {
       email: document.querySelector('#signupUsername').value,
       password: document.querySelector('#signupPassword').value,
     })
-      .then((response) => {
-        console.log(response.data);
-
+      .then(() => {
         document.querySelector('.btn-close').click();
 
         document.querySelector('#loginFeedback').innerHTML = 'New user has been created.<br/>Please log in to continue.';
       })
       .catch((error) => {
-      // handle error
+        // handle error
         console.log(error);
         document.querySelector('#signupFeedback').innerHTML = error.response.data.error;
       });
@@ -540,9 +486,3 @@ continueGameBtn.addEventListener('click', continueGame);
  */
 const logoutBtn = document.querySelector('.btn-logout');
 logoutBtn.addEventListener('click', logout);
-
-// const getCenterCoordinates = (element) => {
-//   const shape = element.getBoundingClientRect();
-//   return { x: shape.left + (shape.width / 2), y: (shape.top + (shape.height / 2)) };
-// };
-// console.log(getCenterCoordinates(document.querySelector('#dot-3-1')));

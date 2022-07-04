@@ -82,3 +82,18 @@ label {
 .score {
   font-size: large;
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: white !important;
+}
+
+.title {
+  color: rgb(210, 117, 109);
+  font-size: 70px;
+  font-weight: 900;
+  font-stretch: wider;
+}

@@ -1,6 +1,7 @@
 const GRID_WIDTH = 6;
 const GRID_HEIGHT = 6;
 
+// 5 colors
 const colors = ['rgb(172, 170, 118)',
   'rgb(91, 115, 141)',
   'rgb(219, 73, 84)',
@@ -26,6 +27,22 @@ const createGrid = () => {
   }
 
   return gridDots;
+};
+
+/**
+ * Replace empty dots with new dots.
+ * @param {string[][]} param0 Grid.
+ * @returns New full grid.
+ */
+const replaceEmptyDots = ({ grid }) => {
+  for (let x = 0; x < grid.length; x += 1) {
+    for (let y = 0; y < grid[x].length; y += 1) {
+      if (grid[x][y] === '') {
+        grid[x][y] = colors[Math.floor(Math.random() * (colors.length - 1))];
+      }
+    }
+  }
+  return grid;
 };
 
 export default function initGamesController(db) {
@@ -98,9 +115,11 @@ export default function initGamesController(db) {
         limit: 1,
       });
 
+      const grid = replaceEmptyDots(request.body);
+
       games[0].update({
         gameState: {
-          grid: request.body.grid,
+          grid,
           score: request.body.score,
         },
       });

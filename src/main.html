@@ -14,6 +14,7 @@
   <body>
     <div class="container">
       <div class="login-container">
+        <div class="title mb-3 pb-3">Tik.</div>
         <form id="login-form">
           <div class="form-floating mb-3">
             <input
@@ -33,6 +34,7 @@
               id="password"
               name="password"
               placeholder="password"
+              autocomplete="off"
               required
             />
             <label for="password" class="form-label">Password</label>
@@ -95,6 +97,7 @@
                     id="signupPassword"
                     name="signupPassword"
                     placeholder="password"
+                    autocomplete="off"
                     required
                   />
                   <label for="signupPassword" class="form-label"
@@ -167,6 +170,7 @@
           >
           <a class="nav-item nav-link text-white restart">Restart</a>
         </nav>
+        <canvas id="drawLayer" style="position: absolute; z-index: 0"></canvas>
         <div class="grid"></div>
         <nav class="navbar fixed-bottom navbar-light justify-content-around">
           <a class="nav-item nav-link">
