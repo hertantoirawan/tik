@@ -454,6 +454,9 @@ signupBtn.addEventListener('click', () => {
         document.querySelector('.btn-close').click();
 
         document.querySelector('#loginFeedback').innerHTML = 'New user has been created.<br/>Please log in to continue.';
+
+        document.querySelector('#signupUsername').value = '';
+        document.querySelector('#signupPassword').value = '';
       })
       .catch((error) => {
         // handle error
