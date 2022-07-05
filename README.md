@@ -8,7 +8,7 @@ Tik is a connect-the-dot game.
 
 - Minimum connected dots is 2
 - Dots can be connected to dots above, below, left, right (not diagonal) and to dots of the same color
-- Dots can be connected by holding a mouse click and move the pointer over other dots
+- Dots can be connected by holding a mouse click, and moving the pointer over other dots
 - Connected dots will dissapear, dots above them will fall, empty spaces will be filled with new dots
 - Dots colors are randomly chosen out of 5 options
 - Each connected pair of dots will score 1, eg: 2 dots -> 1 point, 3 dots -> 2 points, and so on 
