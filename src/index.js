@@ -52,6 +52,8 @@ const switchToLoginMode = () => {
 
   document.querySelector('#username').value = '';
   document.querySelector('#password').value = '';
+  document.querySelector('#signupUsername').value = '';
+  document.querySelector('#signupPassword').value = '';
 };
 
 /**
