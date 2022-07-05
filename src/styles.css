@@ -99,3 +99,7 @@ input:-webkit-autofill:active {
   font-weight: 900;
   font-stretch: wider;
 }
+
+.title-sub {
+  color: rgb(202, 71, 102);
+}
