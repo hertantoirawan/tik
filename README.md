@@ -29,6 +29,7 @@ Tik is a connect-the-dot game.
 - UI design and background are based on a popular connect-the-dot game, [Dots](https://www.dots.co/) 
 - UI, excluding the dots grid, is done using [Bootstrap](https://getbootstrap.com/)
 - Database is using [PostgreSQL](https://www.postgresql.org/)
+- [Sequelize](https://sequelize.org/) is used for ORM
 - Animation done using [anime.js](https://animejs.com/)
 - Module bundler done using [Webpack](https://webpack.js.org/)
 
