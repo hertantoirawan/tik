@@ -1,8 +1,6 @@
 # Tik
 Tik is a connect-the-dot game.
 
-**LIVE LINK** : [https://connect-the-tik.herokuapp.com/](https://connect-the-tik.herokuapp.com/)
-
 ## Features
 <img src="https://user-images.githubusercontent.com/17814490/177370951-b9f74069-57b1-484b-8dd1-e5fa492ee2d7.jpg" width="200"> <img src="https://user-images.githubusercontent.com/17814490/177370958-daf41f1a-0a20-45fa-9892-2c5cef9d9f0e.jpg" width="200"> <img src="https://user-images.githubusercontent.com/17814490/177373183-d0873fb5-d04a-4a44-9125-d3ffd33134ec.jpg" width="200">
 
